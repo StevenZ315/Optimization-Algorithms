@@ -42,7 +42,8 @@ class GeneticAlgorithm:
                  generation=50,
                  cross_rate=0.8,
                  mutate_rate=0.1,
-                 selection='roulette_wheel',
+                 selection='tournament',
+                 tournament_size=3,
                  crossover='one_point'):
 
         self.population_size = population_size
@@ -52,6 +53,7 @@ class GeneticAlgorithm:
         self.boundary = boundary
         self.population = []
         self.selection_method = selection
+        self.tournament_size = tournament_size
         self.crossover_method = crossover
         self.fitness_func = func
 
@@ -78,8 +80,8 @@ class GeneticAlgorithm:
         """
         Select k genes based on certain rules. Accepted rules:
         - roulette-wheel
-        - tournament (TO DO)
-        - stochastic (To DO)
+        - tournament
+        - stochastic
         - truncation (To DO)
         :param population: The population to select from.
         :param k: Number of genes to select.
@@ -87,15 +89,14 @@ class GeneticAlgorithm:
         """
         ret = []
 
+        # Calculate accumulated normalized fitness.
+        fitness = [x.get_fitness() for x in population]
+        reverse_fitness = [1 / fit for fit in fitness]
+        normalized_fitness = [f / sum(reverse_fitness) for f in reverse_fitness]
+        for i in range(1, len(fitness)):
+            normalized_fitness[i] += normalized_fitness[i - 1]
+
         if self.selection_method == "roulette_wheel":
-            # Calculate accumulated normalized fitness.
-            fitness = [x.get_fitness() for x in population]
-            # print(fitness)
-            reverse_fitness = [1/fit for fit in fitness]
-            normalized_fitness = [f/sum(reverse_fitness) for f in reverse_fitness]
-            for i in range(1, len(fitness)):
-                normalized_fitness[i] += normalized_fitness[i-1]
-            #print(normalized_fitness)
             # Selection based on fitness.
             for j in range(k):
                 r = random.random()
@@ -104,11 +105,29 @@ class GeneticAlgorithm:
                         ret.append(population[index])
                         break
 
+        if self.selection_method == "stochastic":
+            for j in range(k):
+                candidates = []
+                for _ in range(2):
+                    r = random.random()
+                    for index in range(len(fitness)):
+                        if normalized_fitness[index] >= r:
+                            candidates.append(population[index])
+                            break
+                    candidates.sort(key=lambda x: x.get_fitness(), reverse=False)
+                    ret.append(candidates[0])
+
+        if self.selection_method == "tournament":
+            for j in range(k):
+                candidates = random.choices(self.population, k=self.tournament_size)
+                candidates.sort(key=lambda x: x.get_fitness(), reverse=False)
+                ret.append(candidates[0])
+
         return ret
 
     def crossover(self, gene1, gene2):
         """
-        Crossover between two genes and return the offsprings.
+        Crossover between two genes and return the offsprings if they are better.
         Methods accepted:
         - one_point
         - two-points (To DO)
@@ -129,6 +148,9 @@ class GeneticAlgorithm:
             offspring1 = Gene(data=offspring1_data)
             offspring2 = Gene(data=offspring2_data)
 
+            offspring1.set_fitness(self.evaluate(offspring1.get_data()))
+            offspring2.set_fitness(self.evaluate(offspring2.get_data()))
+
         return offspring1, offspring2
 
     def mutation(self, gene):
@@ -145,7 +167,7 @@ class GeneticAlgorithm:
         lower, upper = self.boundary[pos]
         new_val = random.uniform(lower, upper)
         data[pos] = new_val
-        return Gene(data=data)
+        return Gene(data=data, fitness=self.evaluate(data))
 
     def population_info(self, population):
         """
@@ -206,10 +228,6 @@ class GeneticAlgorithm:
 
             # Replace old population with new.
             self.population = next_gen
-
-            # Update fitness for all genes.
-            for gene in self.population:
-                gene.set_fitness(self.evaluate(gene.get_data()))
 
             cur_generation += 1
             temp = self.population_info(self.population)

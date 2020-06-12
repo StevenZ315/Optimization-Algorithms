@@ -1,9 +1,16 @@
 from heuristic_algorithm.genetic_algorithm import GeneticAlgorithm
-from test_function.single_objective import Ackley
+from test_function import single_objective
 import math
 
-ackley = Ackley(dim=5)
-boundary = ackley.boundary()
+func = single_objective.CrossIT()
 
-GA = GeneticAlgorithm(ackley.function, boundary, generation=5000)
+boundary = func.boundary()
+
+GA = GeneticAlgorithm(func.function, boundary,
+                      population_size=1000,
+                      generation=1000,
+                      selection="tournament",
+                      tournament_size=9)
 GA.fit()
+
+print(func)
