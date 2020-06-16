@@ -1,16 +1,27 @@
 from heuristic_algorithm.genetic_algorithm import GeneticAlgorithm
-from test_function import single_objective
+from heuristic_algorithm.pso import PSO
+from test_function.single_objective import Ackley, Rastrigin
 import math
+import time
+import random
 
-func = single_objective.CrossIT()
 
-boundary = func.boundary()
+def func(x):
+    return -20*math.exp(-0.2*(0.5*(x**2 + y**2))**0.5) - \
+           math.exp(0.5*(math.cos(2*math.pi*x) + math.cos(2*math.pi*y))) + math.e + 20
 
-GA = GeneticAlgorithm(func.function, boundary,
-                      population_size=1000,
-                      generation=1000,
-                      selection="tournament",
-                      tournament_size=9)
-GA.fit()
 
-print(func)
+boundary = [(-10, 10), (-10, 10)]
+
+
+def eval(algorithm, func, boundary, repeat=100, **kwargs):
+    start = time.time()
+    for _ in range(repeat):
+        alg = algorithm(func, boundary, **kwargs)
+        alg.fit()
+    t = time.time() - start
+    print("Algorithm run %d times.\t Total time: %.2f seconds" % (repeat, t))
+
+
+#eval(PSO, func, boundary)
+eval(PSO, Rastrigin(dim=2).function, boundary, repeat=25, plot=False, population_size=200)

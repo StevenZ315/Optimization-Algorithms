@@ -5,6 +5,8 @@
 
 import math
 import random
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 
 class Gene:
@@ -39,12 +41,14 @@ class GeneticAlgorithm:
     """
     def __init__(self, func, boundary,
                  population_size=100,
-                 generation=50,
+                 generation=200,
                  cross_rate=0.8,
-                 mutate_rate=0.1,
+                 mutate_rate=0.05,
                  selection='tournament',
                  tournament_size=3,
-                 crossover='one_point'):
+                 crossover='one_point',
+                 tol=1e-5,
+                 plot=False):
 
         self.population_size = population_size
         self.generation = generation
@@ -56,6 +60,10 @@ class GeneticAlgorithm:
         self.tournament_size = tournament_size
         self.crossover_method = crossover
         self.fitness_func = func
+        self.tol = tol
+
+        self.generate_plot = plot
+        self.ims = []
 
         # Initialize the population based on boundary.
         while len(self.population) < self.population_size:
@@ -195,6 +203,14 @@ class GeneticAlgorithm:
 
         return mean, std, min(fits), max(fits)
 
+    def plot(self):
+        x = [p.data[0] for p in self.population]
+        y = [p.data[1] for p in self.population]
+        im = plt.scatter(x, y, c='blue', marker='.', alpha=0.5)
+        plt.xlim(self.boundary[0])
+        plt.ylim(self.boundary[1])
+        self.ims.append([im])
+
     def fit(self):
         """
         Main frame for genetic algorithm.
@@ -229,6 +245,18 @@ class GeneticAlgorithm:
             # Replace old population with new.
             self.population = next_gen
 
-            cur_generation += 1
-            temp = self.population_info(self.population)
+            # Early Stopping
+            if self.best.get_fitness() < self.tol:
+                break
 
+            if self.generate_plot:
+                self.plot()
+
+            cur_generation += 1
+            _ = self.population_info(self.population)
+
+        if self.generate_plot:
+            fig = plt.figure()
+            ani = animation.ArtistAnimation(fig, self.ims, interval=500, blit=True,
+                                            repeat_delay=1000)
+            plt.show()
