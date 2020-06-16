@@ -1,17 +1,10 @@
-from heuristic_algorithm.genetic_algorithm import GeneticAlgorithm
-from heuristic_algorithm.pso import PSO
-from test_function.single_objective import Ackley, Rastrigin
+
+from heuristic_algorithm import GeneticAlgorithm, PSO
+from test_function import Ackley, Rastrigin, CrossIT
 import math
 import time
-import random
-
-
-def func(x):
-    return -20*math.exp(-0.2*(0.5*(x**2 + y**2))**0.5) - \
-           math.exp(0.5*(math.cos(2*math.pi*x) + math.cos(2*math.pi*y))) + math.e + 20
-
-
-boundary = [(-10, 10), (-10, 10)]
+import matplotlib.pyplot as plt
+from util import AnimatedScatter
 
 
 def eval(algorithm, func, boundary, repeat=100, **kwargs):
@@ -19,9 +12,25 @@ def eval(algorithm, func, boundary, repeat=100, **kwargs):
     for _ in range(repeat):
         alg = algorithm(func, boundary, **kwargs)
         alg.fit()
+        history = alg.history()
     t = time.time() - start
     print("Algorithm run %d times.\t Total time: %.2f seconds" % (repeat, t))
 
 
-#eval(PSO, func, boundary)
-eval(PSO, Rastrigin(dim=2).function, boundary, repeat=25, plot=False, population_size=200)
+# eval(PSO, func, boundary)
+# eval(PSO, Rastrigin(dim=2).function, boundary, repeat=25, population_size=200)
+
+def create_animation(history, **graph_kargs):
+    anim = AnimatedScatter(history, **graph_kargs)
+    anim.save('test.gif')
+    plt.show()
+
+
+func = Ackley(dim=2)
+#func = Ackley(dim=2)
+
+alg = GeneticAlgorithm(func.function, func.boundary(), population_size=200)
+alg.fit()
+history = alg.history()
+
+create_animation(history, func=func, title='GA with 200 population.')

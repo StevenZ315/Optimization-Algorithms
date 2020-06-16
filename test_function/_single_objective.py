@@ -59,7 +59,7 @@ class Ackley(Function):
         return [(-32.768, 32.768)] * self.dim
 
     def solution(self):
-        return (0,) * self.dim
+        return [(0,) * self.dim]
 
     def __str__(self):
         return "Ackley:\tDim = " + str(self.dim) + "\tGlobal Minimum: " + str(self.solution())
@@ -76,7 +76,7 @@ class Bukin(Function):
         return [(-15, -5), (-3, 3)]
 
     def solution(self):
-        return -10, 1
+        return [(-10, 1), ]
 
     def __str__(self):
         return "Bukin:\tDim = 2\tGlobal Minimum: " + str(self.solution())
@@ -96,7 +96,7 @@ class Rastrigin(Function):
         return [(-5.12, 5.12)] * self.dim
 
     def solution(self):
-        return (0,) * self.dim
+        return [(0,) * self.dim]
 
     def __str__(self):
         return "Rastrigin:\tDim = " + str(self.dim) + "\tGlobal Minimum: " + str(self.solution())
@@ -116,7 +116,7 @@ class Sphere(Function):
         return [(-10, 10)] * self.dim
 
     def solution(self):
-        return (0,) * self.dim
+        return [(0,) * self.dim]
 
     def __str__(self):
         return "Sphere:\tDim = " + str(self.dim) + "\tGlobal Minimum: " + str(self.solution())
@@ -136,7 +136,7 @@ class Rosenbrock(Function):
         return [(-5, 10)] * self.dim
 
     def solution(self):
-        return (1,) * self.dim
+        return [(1,) * self.dim]
 
     def __str__(self):
         return "Rosenbrock:\tDim = " + str(self.dim) + "\tGlobal Minimum: " + str(self.solution())
@@ -153,7 +153,10 @@ class CrossIT(Function):
         return [(-10, 10), (-10, 10)]
 
     def solution(self):
-        return 1.3491, -1.3491
+        return [(-1.3491, -1.3491),
+                (1.3491, -1.3491),
+                (-1.3491, 1.3491),
+                (1.3491, 1.3491)]
 
     def __str__(self):
         return "CrossIT:\tDim = 2\tGlobal Minimum: " + str(self.solution())

@@ -5,8 +5,8 @@
 
 import math
 import random
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+from collections import defaultdict
+
 
 
 class Gene:
@@ -41,14 +41,13 @@ class GeneticAlgorithm:
     """
     def __init__(self, func, boundary,
                  population_size=100,
-                 generation=200,
+                 generation=50,
                  cross_rate=0.8,
-                 mutate_rate=0.05,
+                 mutate_rate=0.1,
                  selection='tournament',
                  tournament_size=3,
                  crossover='one_point',
-                 tol=1e-5,
-                 plot=False):
+                 tol=1e-5):
 
         self.population_size = population_size
         self.generation = generation
@@ -60,29 +59,45 @@ class GeneticAlgorithm:
         self.tournament_size = tournament_size
         self.crossover_method = crossover
         self.fitness_func = func
+        self.gbest = None
         self.tol = tol
 
-        self.generate_plot = plot
-        self.ims = []
+        # History Info.
+        self._history = defaultdict(list)
+        self._history['boundary'] = self.boundary
 
-        # Initialize the population based on boundary.
-        while len(self.population) < self.population_size:
+    # Initialize the population based on boundary.
+    def initialization(self):
+        for _ in range(self.population_size):
             value = []
-            for (lower, upper) in boundary:
+            for (lower, upper) in self.boundary:
                 value.append(random.uniform(lower, upper))
-
             # Calculate fitness.
             fitness = self.evaluate(value)
 
             self.population.append(Gene(data=value, fitness=fitness))
 
-        self.best = self.select_best(self.population)
+        self.select_best(self.population)
 
     def evaluate(self, params):
         return abs(self.fitness_func(params))
 
     def select_best(self, population):
-        return sorted(population, key=lambda x: x.get_fitness(), reverse=False)[0]
+        pbest = sorted(population, key=lambda x: x.get_fitness(), reverse=False)[0].get_data()
+        if not self.gbest or self.evaluate(pbest) < self.evaluate(self.gbest):
+            self.gbest = pbest
+
+        # Generate history for current generation.
+        curr_generation_history = defaultdict(list)
+        for p in population:
+            curr_generation_history['solution'].append(p.get_data())
+            curr_generation_history['fitness'].append(p.get_fitness())
+        curr_generation_history['solution_best'] = self.gbest
+        curr_generation_history['fitness_best'] = self.evaluate(self.gbest)
+
+        # Append to global history.
+        for key in curr_generation_history.keys():
+            self._history[key].append(curr_generation_history[key])
 
     def selection(self, population, k):
         """
@@ -190,38 +205,28 @@ class GeneticAlgorithm:
         square_sum = sum(x**2 for x in fits)
         std = abs(square_sum/length - mean**2)**0.5
 
-        # Update best resolution.
-        best_ind = self.select_best(population)
-        if best_ind.get_fitness() < self.best.get_fitness():
-            self.best = best_ind
-
-        print("Best individual found so far is %s, with fitness %.5f" % (self.best.get_data(), self.best.get_fitness()))
+        print("Best individual found so far is %s, with fitness %.5f" % (self.gbest, self.evaluate(self.gbest)))
         print("Min fitness of current pop: %.4f" % min(fits))
         print("Max fitness of current pop: %.4f" % max(fits))
         print("Avg fitness of current pop: %.4f" % mean)
         print("Std of current pop: %.4f" % std)
 
-        return mean, std, min(fits), max(fits)
+        self._history['fitness_summary'].append((mean, std, min(fits), max(fits)))
 
-    def plot(self):
-        x = [p.data[0] for p in self.population]
-        y = [p.data[1] for p in self.population]
-        im = plt.scatter(x, y, c='blue', marker='.', alpha=0.5)
-        plt.xlim(self.boundary[0])
-        plt.ylim(self.boundary[1])
-        self.ims.append([im])
+    def history(self):
+        return self._history
 
     def fit(self):
         """
         Main frame for genetic algorithm.
         :return:
         """
-        cur_generation = 1
+        self.initialization()
         print("Initial population generated.")
 
         # Begin evolution.
-        while cur_generation <= self.generation:
-            print("-- Generation %d --" % cur_generation)
+        for i in range(self.generation):
+            print("-- Generation %d --" % (i + 1))
 
             # Select the base for next generation.
             selected_population = self.selection(self.population, self.population_size)
@@ -244,19 +249,11 @@ class GeneticAlgorithm:
 
             # Replace old population with new.
             self.population = next_gen
+            self.select_best(self.population)
+            self.population_info(self.population)
 
             # Early Stopping
-            if self.best.get_fitness() < self.tol:
+            if self.evaluate(self.gbest) < self.tol:
                 break
 
-            if self.generate_plot:
-                self.plot()
 
-            cur_generation += 1
-            _ = self.population_info(self.population)
-
-        if self.generate_plot:
-            fig = plt.figure()
-            ani = animation.ArtistAnimation(fig, self.ims, interval=500, blit=True,
-                                            repeat_delay=1000)
-            plt.show()

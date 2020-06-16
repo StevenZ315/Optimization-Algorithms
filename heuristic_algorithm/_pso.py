@@ -3,9 +3,9 @@
 # Simple Particle Swarm Algorithm
 ###################################################################
 
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import random
+import numpy as np
+from collections import defaultdict
 
 
 class Particle:
@@ -30,12 +30,11 @@ class PSO:
                  w=0.6,
                  c1=1,
                  c2=1,
-                 tol=1e-5,
-                 plot=False):
+                 tol=1e-5):
 
         self.population_size = population_size
         self.generation = generation
-        self.w = w #
+        self.w = w
         self.c1 = c1
         self.c2 = c2
         self.tol = tol
@@ -43,25 +42,41 @@ class PSO:
         self.population = []
         self.fitness_func = func
         self.gbest = None
-        self.generate_plot = plot
-        self.ims = []
+
+        # History Info.
+        self._history = defaultdict(list)
+        self._history['boundary'] = self.boundary
 
     def initialization(self):
         for _ in range(self.population_size):
             self.population.append(Particle(boundary=self.boundary))
         self.calc_best(self.population)
+        self.population_info(self.population)
 
     def evaluate(self, params):
         return abs(self.fitness_func(params))
 
     def calc_best(self, population):
-        for p in self.population:
+        for p in population:
             p.fitness = self.evaluate(p.pos)
             if p.fitness < p.fbest:
                 p.fbest = p.fitness
                 p.pbest = p.pos
             if not self.gbest or p.fitness < self.evaluate(self.gbest):
                 self.gbest = p.pos
+
+        # Generate history for current generation.
+        curr_generation_history = defaultdict(list)
+        for p in population:
+            curr_generation_history['solution'].append(p.pos)
+            curr_generation_history['fitness'].append(p.fitness)
+        curr_generation_history['solution_best'] = self.gbest
+        curr_generation_history['fitness_best'] = self.evaluate(self.gbest)
+
+        # Append to global history.
+        for key in curr_generation_history.keys():
+            self._history[key].append(curr_generation_history[key])
+
 
     def diff_calc(self, list1, list2):
         """
@@ -145,15 +160,11 @@ class PSO:
         print("Avg fitness of current pop: %.4f" % mean)
         print("Std of current pop: %.4f" % std)
 
-        return mean, std, min(fits), max(fits)
+        # Update global history
+        self._history['fitness_summary'].append((mean, std, min(fits), max(fits)))
 
-    def plot(self, iteration):
-        x = [p.pos[0] for p in self.population]
-        y = [p.pos[1] for p in self.population]
-        im = plt.scatter(x, y, c='blue', marker='.', alpha=0.5)
-        plt.xlim(self.boundary[0])
-        plt.ylim(self.boundary[1])
-        self.ims.append([im])
+    def history(self):
+        return self._history
 
     def fit(self):
         """
@@ -165,24 +176,15 @@ class PSO:
 
         # Iteration
         for i in range(self.generation):
-            print("-- Generation %d --" % i)
+            print("-- Generation %d --" % (i+1))
             self.update(self.population)
             self.calc_best(self.population)
 
             # Print study info.
-            _ = self.population_info(self.population)
-
-            if self.generate_plot:
-                self.plot(i)
-
+            self.population_info(self.population)
 
             # Early stopping.
             if self.evaluate(self.gbest) < self.tol:
                 break
 
-        if self.generate_plot:
-            fig = plt.figure()
-            ani = animation.ArtistAnimation(fig, self.ims, interval=500, blit=True,
-                                            repeat_delay=1000)
-            plt.show()
 
