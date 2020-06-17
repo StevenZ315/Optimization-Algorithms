@@ -20,4 +20,7 @@ Multi-objective functions:
 
 # Simulation Results
 Hill Climbing:
+
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/HC_Sphere.gif)
 ![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/HC_Ackley.gif)
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/HC_CrossIT.gif)
