@@ -24,3 +24,21 @@ Hill Climbing:
 ![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/HC_Sphere.gif)
 ![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/HC_Ackley.gif)
 ![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/HC_CrossIT.gif)
+
+Simulated Annealing:
+
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/SA_Sphere.gif)
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/SA_Ackley.gif)
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/SA_CrossIT.gif)
+
+Genetic Algorithm:
+
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/GA_Sphere.gif)
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/GA_Ackley.gif)
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/GA_CrossIT.gif)
+
+Particle Swarm Algorithm:
+
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/PSO_Sphere.gif)
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/PSO_Ackley.gif)
+![](https://github.com/StevenZ315/Optimization-Algorithms/blob/master/graph/PSO_CrossIT.gif)
