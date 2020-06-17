@@ -40,7 +40,7 @@ class GeneticAlgorithm:
     Class of genetic algorithm.
     """
     def __init__(self, func, boundary,
-                 population_size=100,
+                 population_size=200,
                  generation=50,
                  cross_rate=0.8,
                  mutate_rate=0.1,

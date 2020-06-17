@@ -25,7 +25,7 @@ class PSO:
     Class of particle swarm algorithm.
     """
     def __init__(self, func, boundary,
-                 population_size=20,
+                 population_size=200,
                  generation=100,
                  w=0.6,
                  c1=1,
